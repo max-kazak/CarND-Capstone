@@ -93,7 +93,7 @@ class DBWNode(object):
 
             #self.process_itr = self.process_itr + 1
             rate.sleep()
-            
+
 
     def dbw_enabled_cb(self, msg):
         self.dbw_enabled = msg
