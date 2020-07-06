@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, Bool
 from geometry_msgs.msg import PoseStamped, Pose
 from styx_msgs.msg import TrafficLightArray, TrafficLight
 from styx_msgs.msg import Lane
@@ -10,6 +10,9 @@ from light_classification.tl_classifier import TLClassifier
 import tf
 import cv2
 import yaml
+import math
+import numpy as np
+import PyKDL
 
 STATE_COUNT_THRESHOLD = 3
 
@@ -48,6 +51,8 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+
+        rospy.loginfo('Traffic light detector initialized')
 
         rospy.spin()
 
@@ -90,18 +95,56 @@ class TLDetector(object):
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
 
-    def get_closest_waypoint(self, pose):
+    def get_closest_waypoint(self, pose, waypoints=None, mode='omni'):
         """Identifies the closest path waypoint to the given position
             https://en.wikipedia.org/wiki/Closest_pair_of_points_problem
         Args:
             pose (Pose): position to match a waypoint to
+            waypoints: list of waypoints to search (default=self.waypoints)
+            mode: 'omni' - all directions, 'forward' - forward direction
 
         Returns:
             int: index of the closest waypoint in self.waypoints
 
         """
-        #TODO implement
-        return 0
+        if waypoints is None:
+            waypoints = self.waypoints
+
+        # search using nearest distance
+        min_dist = float('inf')
+        min_idx = -1
+        search_range = 300  # don't bother if traffic light is too far
+
+        for wp_idx, wp in enumerate(waypoints):
+            dist = calc_pose_dist(wp.pose.pose, pose)
+
+            if (dist < search_range) and (dist < min_dist) :
+                if mode == 'omni':
+                    min_dist = dist
+                    min_idx = wp_idx
+
+                elif mode == 'forward':
+                    po = pose.orientation
+                    wpo = wp.pose.pose.orientation
+                    wpp = wp.pose.pose.position
+
+                    car_vector = PyKDL.Rotation.Quaternion(po.x, po.y, po.z, po.w) * PyKDL.Vector(1, 0, 0)  # change the reference frame of 1,0,0 to the orientation of the car
+                    wp_vector = PyKDL.Vector(wpp.x - pose.position.x, wpp.y - pose.position.y, 0) # shift wp vector to car origin
+
+                    # dot product is the cosinus of angle between both
+                    angle = np.arccos(PyKDL.dot(car_vector, wp_vector) / car_vector.Norm() / wp_vector.Norm())
+
+                    if angle < np.pi / 2:
+                        # within 90deg view angle
+                        min_dist = dist
+                        min_idx = wp_idx
+                else:
+                    rospy.logerr('Unsupported search method {}'.format(mode))
+                    return min_idx
+
+        return min_idx
+
+
 
     def get_light_state(self, light):
         """Determines the current color of the traffic light
@@ -131,20 +174,40 @@ class TLDetector(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        light = None
-
         # List of positions that correspond to the line to stop in front of for a given intersection
         stop_line_positions = self.config['stop_line_positions']
-        if(self.pose):
-            car_position = self.get_closest_waypoint(self.pose.pose)
 
-        #TODO find the closest visible traffic light (if one exists)
+        # check inputs
+        if self.pose is None or self.waypoints is None or self.light_classifier is None:
+            return -1, TrafficLight.UNKNOWN
 
-        if light:
-            state = self.get_light_state(light)
-            return light_wp, state
-        self.waypoints = None
-        return -1, TrafficLight.UNKNOWN
+        # START: Find upcoming light
+        light_idx = self.get_closest_waypoint(self.pose.pose, self.lights, "forward")
+
+        if light_idx == -1:
+            # no light ahead
+            return -1, TrafficLight.UNKNOWN
+        # END: Find upcoming light
+
+        # START: waypoint closes to the upcoming stop line for a traffic light
+        stop_wp_idx = self.get_closest_waypoint(stop_line_positions[light_idx].pose.pose,
+                                                      self.waypoints.waypoints,
+                                                      mode='omni')
+        if stop_wp_idx == -1:
+            rospy.logerr('No waypoint found close to traffic light')
+            return -1, TrafficLight.UNKNOWN
+        # END: waypoint closes to the upcoming stop line for a traffic light
+
+        # START: get traffic light state
+        state = self.lights[light_idx].state  # CHEAT MODE
+        # state = self.get_light_state(self.lights[light_idx]) # use classifier
+        # END: get traffic light state
+
+        return stop_wp_idx, state
+
+
+def calc_pose_dist(self, a, b):
+    return math.sqrt((a.position.x - b.position.x) ** 2 + (a.position.y - b.position.y) ** 2)
 
 if __name__ == '__main__':
     try:
