@@ -17,6 +17,13 @@ class TLClassifier(object):
         root_dir = os.path.dirname(os.path.realpath(__file__))
 
         self._load_coco(os.path.join(root_dir, "models", "coco_inference_graph.pb"))
+        self._load_lenet(os.path.join(root_dir, "models", "lenet.h5"))
+
+    def _load_lenet(self, path):
+        self.class_model = load_model(path)
+        self.class_graph = tf.get_default_graph()
+        self.tlclasses = [TrafficLight.RED, TrafficLight.YELLOW, TrafficLight.GREEN]
+        self.tlclassesnames = ['Red', 'Yellow', 'Green']
 
     def _load_coco(self, path):
         # Use ssd_modilenet_v1_coco model from Tensorflow pre-trained models:
@@ -82,7 +89,8 @@ class TLClassifier(object):
                     return None
                 else:
                     # all good
-                    rospy.loginfo('tl found on the image; box: {} conf: {}'.format(box, detection_scores[idx]))
+                    rospy.loginfo('tl found on the image; box({}x{}): {} conf: {}'.format(box_h, box_w,
+                                                                                          box, detection_scores[idx]))
                     return box
 
     def _classify_state(self, image):
@@ -95,14 +103,17 @@ class TLClassifier(object):
             Returns:
                 state: traffic light state
         """
-        # status = TrafficLight.UNKNOWN
-        # img_resize = np.expand_dims(image, axis=0).astype('float32')
-        # with self.class_graph.as_default():
-        #     predict = self.class_model.predict(img_resize)
-        #     status = self.tlclasses[np.argmax(predict)]
-        #
-        # return status
-        return TrafficLight.UNKNOWN
+        state = TrafficLight.UNKNOWN
+        img_resize = np.expand_dims(image, axis=0).astype('float32')
+        with self.class_graph.as_default():
+            predict = self.class_model.predict(img_resize)[0]
+            most_prob = np.argmax(predict)
+            state = self.tlclasses[most_prob]
+            state_name = self.tlclassesnames[most_prob]
+
+            rospy.loginfo("light state confirmed to be {} with confidence {}".format(state_name, predict[most_prob]))
+
+        return state
 
     def get_classification(self, image):
         """
@@ -118,7 +129,8 @@ class TLClassifier(object):
         if box is None:
             return TrafficLight.UNKNOWN
 
-        tl_img = cv2.resize(image[box[0]:box[2], box[1]:box[3]], (32, 32))
+        tl_img = image[box[0]:box[2], box[1]:box[3]]
+        tl_img = cv2.resize(tl_img, (32, 64))
 
         return self._classify_state(tl_img)
 
@@ -134,8 +146,9 @@ class TLClassifier(object):
         """
         box = self._localize_lights(image)
         if box is None:
-            return TrafficLight.UNKNOWN
+            return None
 
-        tl_img = cv2.resize(image[box[0]:box[2], box[1]:box[3]], (32, 32))
+        tl_img = image[box[0]:box[2], box[1]:box[3]]
+        rospy.loginfo("found tl box ({}x{})".format(tl_img.shape[0], tl_img.shape[1]))
 
-        return tl_img
+        return cv2.resize(tl_img, (32, 64))
