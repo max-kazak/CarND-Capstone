@@ -1,6 +1,8 @@
 .*
 !.gitignore
 
+ros/src/CMakeLists.txt
+
 *.py[cod]
 *.vscode
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import rospy
 from std_msgs.msg import Int32, Bool
 from geometry_msgs.msg import PoseStamped, Pose
@@ -15,6 +16,10 @@ import numpy as np
 import PyKDL
 
 STATE_COUNT_THRESHOLD = 3
+GATHER_DATA = True
+
+root_dir = os.path.dirname(os.path.realpath(__file__))
+
 
 class TLDetector(object):
     def __init__(self):
@@ -51,6 +56,9 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+
+        # traffic light counter
+        self.tl_cnt = 0
 
         rospy.loginfo('Traffic light detector initialized')
 
@@ -202,6 +210,18 @@ class TLDetector(object):
         state = self.lights[light_idx].state  # CHEAT MODE
         # state = self.get_light_state(self.lights[light_idx]) # use classifier
         # END: get traffic light state
+
+        # START: gather data
+        if GATHER_DATA and state != -1:
+            cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+            tl_img = self.light_classifier.get_tl_image(cv_image)
+            cv2.imwrite(os.path.join(root_dir,
+                                     'light_classification',
+                                     'data',
+                                     'tl{}_{}.png'.format(self.tl_cnt, state)),
+                        tl_img)
+            self.tl_cnt += 1
+        # END: gather data
 
         return stop_wp_idx, state
 
