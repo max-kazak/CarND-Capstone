@@ -148,10 +148,10 @@ class TLDetector(object):
                 self.tl_cnt += 1
                 self.last_saved_state = light.state
 
-        # CHEAT. TODO: comment out when classificator is done
+        # doneTODO: comment out when classificator is done
         # return light.state
 
-        #Get classification
+        # Get classification
         return self.light_classifier.get_classification(cv_image)
 
     def process_traffic_lights(self):
@@ -177,6 +177,7 @@ class TLDetector(object):
         if self.pose:
             car_wp_idx = self.get_closest_waypoint(self.pose.pose)
 
+            # Find the closest visible traffic light (if one exists)
             diff = len(self.waypoints.waypoints)
             for i, light in enumerate(self.lights):
                 # Get stop line waypoint index
