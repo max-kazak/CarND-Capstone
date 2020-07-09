@@ -4,12 +4,12 @@ Please use **one** of the two installation options, either native **or** docker 
 
 ### Notes to Reviewer
 
-Group members: 
+Group members:
 
- - Maxim K. (volterr@gmail.com) 
- -	Jeffrey Y. (jeffcyun+udacity@gmail.com) 
- - Sherin A. (shereen@cis.asu.edu.eg) 
- - Junde L. (lishenzhiqsq@gmail.com) 
+ - Maxim K. (volterr@gmail.com)
+ - Jeffrey Y. (thisishaoyu@gmail.com)
+ - Sherin A. (shereen@cis.asu.edu.eg)
+ - Junde L. (lishenzhiqsq@gmail.com)
 
 ### Native Installation
 
