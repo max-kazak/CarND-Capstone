@@ -11,13 +11,17 @@ from keras.models import load_model
 TL_CLASS = 10
 CONFIDENCE_THRESH = 0.3
 
+SAVED_MODEL_COCO = "coco_inference_graph.pb"
+SAVED_MODEL_LENET = "lenet.h5"  # Python3 version
+# SAVED_MODEL_LENET = "lenet27.h5" # Python2.7 version
+
 
 class TLClassifier(object):
     def __init__(self):
         root_dir = os.path.dirname(os.path.realpath(__file__))
 
-        self._load_coco(os.path.join(root_dir, "models", "coco_inference_graph.pb"))
-        self._load_lenet(os.path.join(root_dir, "models", "lenet.h5"))
+        self._load_coco(os.path.join(root_dir, "models", SAVED_MODEL_COCO))
+        self._load_lenet(os.path.join(root_dir, "models", SAVED_MODEL_LENET))
 
     def _load_lenet(self, path):
         self.class_model = load_model(path)
