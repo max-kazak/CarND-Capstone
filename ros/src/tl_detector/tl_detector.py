@@ -17,7 +17,7 @@ import math
 import numpy as np
 
 STATE_COUNT_THRESHOLD = 3
-GATHER_DATA = True
+GATHER_DATA = False
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
 
