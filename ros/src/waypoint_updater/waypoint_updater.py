@@ -24,8 +24,9 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 100 # Number of waypoints we will publish. You can change this number
 MAX_DECEL = 0.5
+DEBUG = True
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -36,7 +37,6 @@ class WaypointUpdater(object):
 
         # doneTODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
         rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
-        #rospy.Subscriber('/obstacle_waypoint', Int32, self.obstacle_cb)
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
@@ -93,10 +93,10 @@ class WaypointUpdater(object):
         base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
 
         if self.stopline_wp_idx == -1 or (self.stopline_wp_idx >= farthest_idx):
-            rospy.loginfo("waypoint_updater: Standard")
+            if DEBUG: rospy.loginfo("waypoint_updater: Standard")
             lane.waypoints = base_waypoints
         else:
-            rospy.loginfo("waypoint_updater: Decelerating!")
+            if DEBUG: rospy.loginfo("waypoint_updater: Decelerating!")
             lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
 
         return lane
@@ -104,7 +104,7 @@ class WaypointUpdater(object):
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
-        for i,wp in enumerate(waypoints):
+        for i, wp in enumerate(waypoints):
             p = Waypoint()
             p.pose = wp.pose
 
@@ -135,10 +135,6 @@ class WaypointUpdater(object):
     def traffic_cb(self, msg):
         # doneTODO: Callback for /traffic_waypoint message. Implement
         self.stopline_wp_idx = msg.data
-
-    def obstacle_cb(self, msg):
-        # TODO: Callback for /obstacle_waypoint message. We will implement it later
-        pass
 
     def get_waypoint_velocity(self, waypoint):
         return waypoint.twist.twist.linear.x
