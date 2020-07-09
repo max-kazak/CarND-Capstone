@@ -8,7 +8,7 @@ Group members:
 
  - Maxim K. (volterr@gmail.com) 
  -	Jeffrey Y. (jeffcyun+udacity@gmail.com) 
- - Sherin A. (shereen.a.hameed@gmail.com) 
+ - Sherin A. (shereen@cis.asu.edu.eg) 
  - Junde L. (lishenzhiqsq@gmail.com) 
 
 ### Native Installation
