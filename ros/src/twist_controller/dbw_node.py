@@ -72,6 +72,7 @@ class DBWNode(object):
         self.loop()
 
     def loop(self):
+        """ Verified by @hyun, page 8 """
         rate = rospy.Rate(50) # 50Hz
         while not rospy.is_shutdown():
             # TODO: Get predicted throttle, brake, and steering using `twist_controller`
@@ -91,7 +92,7 @@ class DBWNode(object):
             if self.dbw_enabled:
                 self.publish(self.throttle, self.brake, self.steering)
                 
-            #self.process_itr = self.process_itr + 1
+            #self.process_itr += 1
             rate.sleep()
             
             
