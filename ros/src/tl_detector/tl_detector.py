@@ -148,10 +148,10 @@ class TLDetector(object):
                 self.tl_cnt += 1
                 self.last_saved_state = light.state
 
-        # CHEAT. TODO: comment out when classificator is done
+        # doneTODO: comment out when classificator is done
         # return light.state
 
-        #Get classification
+        # Get classification
         return self.light_classifier.get_classification(cv_image)
 
     def process_traffic_lights(self):
