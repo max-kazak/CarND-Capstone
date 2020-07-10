@@ -50,7 +50,7 @@ class WaypointUpdater(object):
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(30) # DEBUG: can lower from 50Hz, for testing purposes
+        rate = rospy.Rate(20) # DEBUG: can lower from 50Hz, for testing purposes
         while not rospy.is_shutdown():
             if self.pose and self.base_lane and self.waypoint_tree:
                 # Get closest waypoint

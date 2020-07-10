@@ -15,10 +15,10 @@ class Controller(object):
 
         # Create throttle PID
         kp = 0.3
-        kd = 0.1 # 0
-        ki = 0.01 # 0.1
-        mn = 0. # Minimum throttle value
-        mx = 1.0  # 0.2 # Maximum throttle value
+        kd = 0
+        ki = 0.1
+        mn = 0.     # Minimum throttle value
+        mx = 0.2    # Maximum throttle value
         self.throttle_controller = PID(kp, ki, kd, mn, mx)
 
         # Create velocity low pass filter
