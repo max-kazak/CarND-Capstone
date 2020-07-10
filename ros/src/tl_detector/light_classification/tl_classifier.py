@@ -115,7 +115,7 @@ class TLClassifier(object):
             state = self.tlclasses[most_prob]
             state_name = self.tlclassesnames[most_prob]
 
-            rospy.loginfo("light state confirmed to be {} with confidence {}".format(state_name, predict[most_prob]))
+            rospy.loginfo("light state confirmed to be {}({}) with confidence {}".format(state_name, state, predict[most_prob]))
 
         return state
 
