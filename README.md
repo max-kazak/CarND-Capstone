@@ -6,7 +6,7 @@ Please use **one** of the two installation options, either native **or** docker 
 
 Group members:
 
- - Maxim K. (volterr@gmail.com)
+ - Maxim K. (volterr@gmail.com) [Team Lead]
  - Jeffrey Y. (thisishaoyu@gmail.com)
  - Sherin A. (shereen@cis.asu.edu.eg)
  - Junde L. (lishenzhiqsq@gmail.com)
