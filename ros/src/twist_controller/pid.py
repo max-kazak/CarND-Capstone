@@ -32,6 +32,6 @@ class PID(object):
         self.last_error = error
 
         # rospy.logwarn("Throttle: {0}".format(val))
-        # rospy.logwarn("Verlocity error: {0}".format(error))
+        # rospy.logwarn("Velocity error: {0}".format(error))
 
         return val
