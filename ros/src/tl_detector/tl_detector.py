@@ -18,6 +18,7 @@ import numpy as np
 
 STATE_COUNT_THRESHOLD = 3
 GATHER_DATA = False
+USE_EVERY_N_IMG = 3
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -48,6 +49,9 @@ class TLDetector(object):
         # Data gathering counters
         self.tl_cnt = 0  # traffic light counter
         self.last_saved_state = TrafficLight.UNKNOWN
+
+        # control what images to process
+        self.imgs_cnt = 0
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -85,6 +89,11 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
+        self.imgs_cnt += 1
+        if self.imgs_cnt % USE_EVERY_N_IMG > 0:
+            return
+        self.imgs_cnt = 0
+
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
